@@ -15,6 +15,8 @@ import Login from './pages/Login'
 import Contact from './pages/Contact'
 import AdminDashboard from './pages/AdminDashboard'
 import KitchenDashboard from './pages/KitchenDashboard'
+import SuperAdminPanel from './pages/SuperAdminPanel'
+import Inventory from './pages/Inventory'
 import AdminRoute from './components/AdminRoute'
 
 function App() {
@@ -35,10 +37,16 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/order/success/:id" element={<OrderSuccess />} />
           <Route path="/login" element={<Login />} />
+          
+          {/* Full Stack Super Admin & Inventory (with Navbar & Footer) */}
+          <Route path="/super-admin" element={<AdminRoute><SuperAdminPanel /></AdminRoute>} />
+          <Route path="/inventory" element={<AdminRoute><Inventory /></AdminRoute>} />
         </Route>
         
         {/* Admin/Staff Routes - Protected by AdminRoute gate */}
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/super-admin" element={<AdminRoute><SuperAdminPanel /></AdminRoute>} />
+        <Route path="/admin/inventory" element={<AdminRoute><Inventory /></AdminRoute>} />
         <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/kitchen" element={<KitchenDashboard />} />
 

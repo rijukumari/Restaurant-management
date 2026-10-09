@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { setCredentials } from '../store/slices/authSlice';
@@ -24,6 +24,7 @@ const AdminRoute = ({ children }) => {
 const AdminLoginGate = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState(ADMIN_PASSWORD);
@@ -53,12 +54,12 @@ const AdminLoginGate = () => {
             token: 'lumiere-secure-admin-jwt-token',
           })
         );
-        toast.success('Welcome back, Admin! Opening Dashboard...', {
+        toast.success('Welcome back, Admin! Access Granted...', {
           icon: '👑',
           duration: 2500,
           style: { background: '#121212', color: '#F7F2E8', border: '1px solid #C6A15B' },
         });
-        navigate('/admin', { replace: true });
+        navigate(location.pathname || '/admin', { replace: true });
       } else {
         setLoading(false);
         setErrorMsg('Access Denied: Invalid administrator credentials.');

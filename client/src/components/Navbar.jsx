@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, User, Search, Menu, X, QrCode, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, User, Menu, X, QrCode, Crown, Package, ChevronDown } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import QRScannerModal from './QRScannerModal';
 
@@ -9,9 +9,11 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [iconDropdownOpen, setIconDropdownOpen] = useState(false);
+  const iconTimeoutRef = useRef(null);
+
   const location = useLocation();
   const cartItems = useSelector((state) => state.cart.items);
-  const user = useSelector((state) => state.auth.user);
   
   const cartItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -23,6 +25,11 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    setIconDropdownOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Our Story', path: '/story' },
@@ -30,6 +37,17 @@ const Navbar = () => {
     { name: 'Experience', path: '/experience' },
     { name: 'Contact', path: '/contact' },
   ];
+
+  const handleIconMouseEnter = () => {
+    if (iconTimeoutRef.current) clearTimeout(iconTimeoutRef.current);
+    setIconDropdownOpen(true);
+  };
+
+  const handleIconMouseLeave = () => {
+    iconTimeoutRef.current = setTimeout(() => {
+      setIconDropdownOpen(false);
+    }, 200);
+  };
 
   return (
     <>
@@ -69,7 +87,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Navigation Pills */}
+          {/* Navigation Pills (Original structure without extra dropdowns) */}
           <div className="flex items-center gap-2" style={{ transform: 'translateZ(20px)' }}>
             {navLinks.map((link) => (
               <Link 
@@ -91,9 +109,66 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4" style={{ transform: 'translateZ(30px)' }}>
-            <Link to="/profile" className="text-[#F7F2E8] hover:text-[#C6A15B] transition-colors duration-300 hover:-translate-y-0.5 p-2" title="Profile & Contact">
-              <User size={20} />
-            </Link>
+            {/* Contact Icon with dropdown — Super Admin Panel & Inventory */}
+            <div 
+              className="relative"
+              onMouseEnter={handleIconMouseEnter}
+              onMouseLeave={handleIconMouseLeave}
+            >
+              <button
+                onClick={() => setIconDropdownOpen(prev => !prev)}
+                className="text-[#F7F2E8] hover:text-[#C6A15B] transition-colors duration-300 hover:-translate-y-0.5 p-2 flex items-center gap-1 cursor-pointer"
+                title="Admin Portals"
+              >
+                <User size={20} />
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-300 ${iconDropdownOpen ? 'rotate-180 text-[#C6A15B]' : 'text-gray-400'}`} 
+                />
+              </button>
+
+              <AnimatePresence>
+                {iconDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full right-0 mt-2 w-56 rounded-2xl bg-[#0D0D0D]/95 backdrop-blur-2xl border border-[#C6A15B]/40 shadow-[0_20px_50px_rgba(0,0,0,0.9),_0_0_20px_rgba(198,161,91,0.2)] p-2 z-50"
+                  >
+                    <div className="space-y-1">
+                      {/* Admin Panel */}
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#C6A15B]/15 group transition-all text-white hover:text-[#C6A15B]"
+                      >
+                        <User size={16} className="text-[#C6A15B] shrink-0" />
+                        <span className="text-xs font-semibold">Admin Panel</span>
+                      </Link>
+
+                      {/* Super Admin Panel */}
+                      <Link
+                        to="/super-admin"
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#C6A15B]/15 group transition-all text-white hover:text-[#C6A15B]"
+                      >
+                        <Crown size={16} className="text-[#C6A15B] shrink-0" />
+                        <span className="text-xs font-semibold">Super Admin Panel</span>
+                      </Link>
+
+                      {/* Inventory */}
+                      <Link
+                        to="/inventory"
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#C6A15B]/15 group transition-all text-white hover:text-[#C6A15B]"
+                      >
+                        <Package size={16} className="text-[#C6A15B] shrink-0" />
+                        <span className="text-xs font-semibold">Inventory</span>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <Link to="/cart" className="text-[#F7F2E8] hover:text-[#C6A15B] transition-colors duration-300 hover:-translate-y-0.5 p-2 relative group">
               <ShoppingBag size={20} />
               {cartItemCount > 0 && (
@@ -156,7 +231,7 @@ const Navbar = () => {
             </button>
 
             <div className="flex flex-col items-center gap-6 w-full px-6">
-              {navLinks.map((link, i) => (
+              {navLinks.map((link) => (
                 <motion.div key={link.name} className="w-full text-center">
                   <Link 
                     to={link.path}
@@ -185,6 +260,25 @@ const Navbar = () => {
                 <span>Profile & Contact</span>
               </Link>
 
+              {/* Added Super admin panel & inventory to mobile menu */}
+              <Link 
+                to="/super-admin" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-lg font-playfair tracking-wide text-[#D8B878] hover:text-[#C6A15B] flex items-center gap-2"
+              >
+                <Crown size={18} />
+                <span>Super admin panel</span>
+              </Link>
+
+              <Link 
+                to="/inventory" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-lg font-playfair tracking-wide text-[#D8B878] hover:text-[#C6A15B] flex items-center gap-2"
+              >
+                <Package size={18} />
+                <span>Inventory</span>
+              </Link>
+
               <Link 
                 to="/reservations" 
                 onClick={() => setMobileMenuOpen(false)}
@@ -207,4 +301,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
